@@ -1,0 +1,11 @@
+{
+  "name": "BioClock Presence - Biometric Face & Geofence Attendance",
+  "description": "Enterprise-grade online attendance system with AI facial biometric authentication, anti-spoof liveness check, GPS geofence radar verification, and cryptographically verified timestamps.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

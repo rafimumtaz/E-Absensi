@@ -1,43 +1,57 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import {
   AttendanceRecord,
   Employee,
   WorkLocation,
   WorkShift,
-} from './types';
+} from '../types';
 import {
   INITIAL_ATTENDANCE_RECORDS,
   INITIAL_EMPLOYEES,
   INITIAL_LOCATIONS,
   INITIAL_SHIFTS,
-} from './data/mockData';
-import { Header } from './components/Header';
-import { PunchTerminal } from './components/PunchTerminal';
-import { AttendanceHistory } from './components/AttendanceHistory';
-import { AdminDashboard } from './components/AdminDashboard';
-import { VerificationReceiptModal } from './components/VerificationReceiptModal';
-import { FaceEnrollmentModal } from './components/FaceEnrollmentModal';
+} from '../data/mockData';
+import { Header } from '../components/Header';
+import { PunchTerminal } from '../components/PunchTerminal';
+import { AttendanceHistory } from '../components/AttendanceHistory';
+import { AdminDashboard } from '../components/AdminDashboard';
+import { VerificationReceiptModal } from '../components/VerificationReceiptModal';
+import { FaceEnrollmentModal } from '../components/FaceEnrollmentModal';
 
 export default function App() {
   // Persistence state
   const [employees, setEmployees] = useState<Employee[]>(() => {
-    const saved = localStorage.getItem('bioclock_employees');
-    return saved ? JSON.parse(saved) : INITIAL_EMPLOYEES;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bioclock_employees');
+      return saved ? JSON.parse(saved) : INITIAL_EMPLOYEES;
+    }
+    return INITIAL_EMPLOYEES;
   });
 
   const [locations, setLocations] = useState<WorkLocation[]>(() => {
-    const saved = localStorage.getItem('bioclock_locations');
-    return saved ? JSON.parse(saved) : INITIAL_LOCATIONS;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bioclock_locations');
+      return saved ? JSON.parse(saved) : INITIAL_LOCATIONS;
+    }
+    return INITIAL_LOCATIONS;
   });
 
   const [shifts, setShifts] = useState<WorkShift[]>(() => {
-    const saved = localStorage.getItem('bioclock_shifts');
-    return saved ? JSON.parse(saved) : INITIAL_SHIFTS;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bioclock_shifts');
+      return saved ? JSON.parse(saved) : INITIAL_SHIFTS;
+    }
+    return INITIAL_SHIFTS;
   });
 
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(() => {
-    const saved = localStorage.getItem('bioclock_records');
-    return saved ? JSON.parse(saved) : INITIAL_ATTENDANCE_RECORDS;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bioclock_records');
+      return saved ? JSON.parse(saved) : INITIAL_ATTENDANCE_RECORDS;
+    }
+    return INITIAL_ATTENDANCE_RECORDS;
   });
 
   // Active view state

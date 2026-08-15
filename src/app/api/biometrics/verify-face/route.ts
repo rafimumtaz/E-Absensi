@@ -1,17 +1,6 @@
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from '@google/genai';
-import { createServer as createViteServer } from 'vite';
 
-const app = express();
-const PORT = 3000;
-
-// Body parser with 25MB limit for high-res face biometric snapshots
-app.use(express.json({ limit: '25mb' }));
-app.use(express.urlencoded({ extended: true, limit: '25mb' }));
-
-// Lazy initialization of Gemini AI
 let aiClient: GoogleGenAI | null = null;
 function getGeminiClient(): GoogleGenAI {
   if (!aiClient) {
@@ -27,36 +16,7 @@ function getGeminiClient(): GoogleGenAI {
   return aiClient;
 }
 
-// 1. Health Check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'BioClock Biometric & Geofence Verification Server',
-    geminiAvailable: !!process.env.GEMINI_API_KEY,
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// 2. High-Precision Tamper-Proof Time Endpoint
-app.get('/api/time', (req, res) => {
-  const now = new Date();
-  const serverEpoch = Date.now();
-  const iso = now.toISOString();
-
-  // Signature representation to prove server-side time verification
-  const timeSignature = `TIME-SIG-${serverEpoch.toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-
-  res.json({
-    serverTimeUtc: iso,
-    serverEpochMs: serverEpoch,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-    timeSignature,
-    verified: true,
-  });
-});
-
-// 3. Biometric Face Verification & Liveness Audit Endpoint
-app.post('/api/biometrics/verify-face', async (req, res) => {
+export async function POST(req: NextRequest) {
   try {
     const {
       liveImageBase64,
@@ -64,10 +24,10 @@ app.post('/api/biometrics/verify-face', async (req, res) => {
       employeeName,
       employeeCode,
       challengeAction,
-    } = req.body;
+    } = await req.json();
 
     if (!liveImageBase64) {
-      return res.status(400).json({ error: 'Missing liveImageBase64 payload' });
+      return NextResponse.json({ error: 'Missing liveImageBase64 payload' }, { status: 400 });
     }
 
     // Clean data URL prefix if present
@@ -176,7 +136,7 @@ Output your verdict strictly following the JSON schema.`;
         const jsonText = response.text ? response.text.trim() : '';
         if (jsonText) {
           const parsed = JSON.parse(jsonText);
-          return res.json({
+          return NextResponse.json({
             success: true,
             biometrics: parsed,
             source: 'gemini-ai-engine',
@@ -188,12 +148,11 @@ Output your verdict strictly following the JSON schema.`;
     }
 
     // High-fidelity fallback analyzer for offline or local testing
-    // Checks basic image length & structure
     const isImageValid = cleanLiveBase64.length > 500;
     const baseMatch = isImageValid ? 96.4 + Math.round(Math.random() * 30) / 10 : 45.0;
     const livenessScore = isImageValid ? 97.8 + Math.round(Math.random() * 20) / 10 : 30.0;
 
-    return res.json({
+    return NextResponse.json({
       success: true,
       biometrics: {
         faceDetected: isImageValid,
@@ -221,100 +180,6 @@ Output your verdict strictly following the JSON schema.`;
     });
   } catch (error: any) {
     console.error('Biometric verification error:', error);
-    res.status(500).json({ error: error.message || 'Biometric analysis failed' });
+    return NextResponse.json({ error: error.message || 'Biometric analysis failed' }, { status: 500 });
   }
-});
-
-// 4. Biometric Face Enrollment Quality Analyzer Endpoint
-app.post('/api/biometrics/enroll', async (req, res) => {
-  try {
-    const { imageBase64, employeeName } = req.body;
-    if (!imageBase64) {
-      return res.status(400).json({ error: 'Missing imageBase64' });
-    }
-
-    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-
-    if (process.env.GEMINI_API_KEY) {
-      try {
-        const ai = getGeminiClient();
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.7-flash',
-          contents: {
-            parts: [
-              {
-                inlineData: {
-                  mimeType: 'image/jpeg',
-                  data: cleanBase64,
-                },
-              },
-              {
-                text: `Analyze this image for Employee Biometric Face Registration/Enrollment for "${employeeName || 'New Employee'}".
-Assess quality: face centering, lighting, sharpness, neutral/clear expression, absence of occlusion.
-Output JSON schema.`,
-              },
-            ],
-          },
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                qualityScore: { type: Type.NUMBER, description: '0 to 100 quality rating' },
-                isAcceptableForTemplate: { type: Type.BOOLEAN },
-                clarity: { type: Type.STRING, description: 'EXCELLENT, GOOD, FAIR, POOR' },
-                lighting: { type: Type.STRING, description: 'OPTIMAL, DIM, OVEREXPOSED' },
-                feedback: { type: Type.STRING, description: 'Guidance to user' },
-              },
-              required: ['qualityScore', 'isAcceptableForTemplate', 'clarity', 'lighting', 'feedback'],
-            },
-          },
-        });
-
-        if (response.text) {
-          const parsed = JSON.parse(response.text.trim());
-          return res.json({ success: true, enrollment: parsed });
-        }
-      } catch (err: any) {
-        console.warn('Gemini enrollment analysis fallback:', err?.message);
-      }
-    }
-
-    // Local fallback
-    res.json({
-      success: true,
-      enrollment: {
-        qualityScore: 95,
-        isAcceptableForTemplate: true,
-        clarity: 'EXCELLENT',
-        lighting: 'OPTIMAL',
-        feedback: 'Face profile successfully captured and indexed with high biometric landmark clarity.',
-      },
-    });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message || 'Enrollment failed' });
-  }
-});
-
-// Vite middleware and client SPA handling
-async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`BioClock Server active on http://0.0.0.0:${PORT}`);
-  });
 }
-
-startServer();

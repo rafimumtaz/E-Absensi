@@ -37,7 +37,7 @@ export default function RegisterForm({ locations, shifts }: RegisterFormProps) {
           Create an account
         </h2>
         <p className="mt-2 text-center text-sm text-[#6b6e68]">
-          Join BioClock Flow
+          Join E-Presence Flow
         </p>
       </div>
 

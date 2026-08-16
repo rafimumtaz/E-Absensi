@@ -113,10 +113,6 @@ export const PunchTerminal: React.FC<PunchTerminalProps> = ({
         audio: false,
       });
       setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        videoRef.current.play();
-      }
       setCameraActive(true);
     } catch (err: any) {
       console.warn('Webcam permission error:', err);
@@ -131,7 +127,14 @@ export const PunchTerminal: React.FC<PunchTerminalProps> = ({
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [cameraFacing]);
+  }, [cameraFacing]); // eslint-disable-next-line react-hooks/exhaustive-deps
+
+  // 3.5 Attach stream to video ref when it mounts
+  useEffect(() => {
+    if (cameraActive && videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [cameraActive, stream]);
 
   // 4. Geolocation Fix & Simulation
   const acquireLocation = useCallback(() => {

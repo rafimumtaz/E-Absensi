@@ -37,6 +37,12 @@ export const FaceEnrollmentModal: React.FC<FaceEnrollmentModalProps> = ({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (cameraActive && videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [cameraActive, stream]);
+
   const startCamera = async () => {
     setCameraError(null);
     try {
@@ -49,10 +55,6 @@ export const FaceEnrollmentModal: React.FC<FaceEnrollmentModalProps> = ({
         audio: false,
       });
       setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        videoRef.current.play();
-      }
       setCameraActive(true);
     } catch (err: any) {
       console.warn('Camera start error:', err);

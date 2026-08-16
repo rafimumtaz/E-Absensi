@@ -31,7 +31,7 @@ export default function LoginPage() {
           Sign in to your account
         </h2>
         <p className="mt-2 text-center text-sm text-[#6b6e68]">
-          BioClock Flow Access Terminal
+          E-Presence Access Terminal
         </p>
       </div>
 

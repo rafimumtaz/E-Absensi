@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model WorkLocation {
+  id               String     @id @default(uuid())
+  name             String
+  code             String     @unique
+  address          String
+  latitude         Float
+  longitude        Float
+  radiusMeters     Float
+  isApprovedRemote Boolean?   @default(false)
+  color            String?
+
+  employees        Employee[]
+}
+
+model WorkShift {
+  id                   String     @id @default(uuid())
+  name                 String
+  startTime            String
+  endTime              String
+  graceMinutes         Int
+  breakDurationMinutes Int
+  days                 String[]   // e.g., ["Mon", "Tue"]
+
+  employees            Employee[]
+}
+
+model Employee {
+  id                  String     @id @default(uuid())
+  employeeCode        String     @unique
+  name                String
+  email               String     @unique
+  role                String
+  department          String
+  avatar              String?
+  phone               String?
+  
+  shiftId             String
+  shift               WorkShift  @relation(fields: [shiftId], references: [id])
+  
+  assignedLocationId  String
+  assignedLocation    WorkLocation @relation(fields: [assignedLocationId], references: [id])
+
+  faceEnrolled        Boolean    @default(false)
+  enrolledPhotoUrl    String?
+  enrolledAt          DateTime?
+  biometricConfidence Float?
+  status              String     @default("active") // 'active' | 'on_leave' | 'inactive'
+
+  attendanceRecords   AttendanceRecord[]
+}
+
+model AttendanceRecord {
+  id                String   @id @default(uuid())
+  employeeId        String
+  employee          Employee @relation(fields: [employeeId], references: [id])
+  
+  // Snapshotted employee data at the time of punch
+  employeeName      String
+  employeeCode      String
+  department        String
+  shiftName         String
+  
+  punchType         String   // 'CLOCK_IN' | 'CLOCK_OUT' | 'BREAK_START' | 'BREAK_END'
+  timestamp         DateTime
+  serverTimestamp   DateTime @default(now())
+  timeVerified      Boolean
+  timeFormatted     String
+  dateFormatted     String
+  
+  // Stored as JSON to capture the exact state at the time of record
+  location          Json
+  biometric         Json
+  
+  status            String   // 'ON_TIME' | 'LATE' | 'EARLY_DEPARTURE' etc.
+  verificationHash  String
+  deviceInfo        String
+  notes             String?
+}

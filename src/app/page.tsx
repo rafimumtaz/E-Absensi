@@ -1,258 +1,149 @@
-"use client";
-
-import React, { useState, useEffect } from 'react';
+import prisma from '../lib/prisma';
+import { ClientApp } from './ClientApp';
 import {
-  AttendanceRecord,
-  Employee,
-  WorkLocation,
-  WorkShift,
-} from '../types';
-import {
-  INITIAL_ATTENDANCE_RECORDS,
-  INITIAL_EMPLOYEES,
   INITIAL_LOCATIONS,
   INITIAL_SHIFTS,
+  INITIAL_EMPLOYEES,
+  INITIAL_ATTENDANCE_RECORDS,
 } from '../data/mockData';
-import { Header } from '../components/Header';
-import { PunchTerminal } from '../components/PunchTerminal';
-import { AttendanceHistory } from '../components/AttendanceHistory';
-import { AdminDashboard } from '../components/AdminDashboard';
-import { VerificationReceiptModal } from '../components/VerificationReceiptModal';
-import { FaceEnrollmentModal } from '../components/FaceEnrollmentModal';
 
-export default function App() {
-  // Persistence state
-  const [employees, setEmployees] = useState<Employee[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bioclock_employees');
-      return saved ? JSON.parse(saved) : INITIAL_EMPLOYEES;
-    }
-    return INITIAL_EMPLOYEES;
+export const dynamic = 'force-dynamic';
+
+async function seedDatabase() {
+  console.log('Seeding database with initial data...');
+  
+  // Seed Locations
+  for (const loc of INITIAL_LOCATIONS) {
+    await prisma.workLocation.create({
+      data: {
+        id: loc.id,
+        name: loc.name,
+        code: loc.code,
+        address: loc.address,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        radiusMeters: loc.radiusMeters,
+        isApprovedRemote: loc.isApprovedRemote ?? false,
+        color: loc.color,
+      },
+    });
+  }
+
+  // Seed Shifts
+  for (const shift of INITIAL_SHIFTS) {
+    await prisma.workShift.create({
+      data: {
+        id: shift.id,
+        name: shift.name,
+        startTime: shift.startTime,
+        endTime: shift.endTime,
+        graceMinutes: shift.graceMinutes,
+        breakDurationMinutes: shift.breakDurationMinutes,
+        days: shift.days,
+      },
+    });
+  }
+
+  // Seed Employees
+  for (const emp of INITIAL_EMPLOYEES) {
+    await prisma.employee.create({
+      data: {
+        id: emp.id,
+        employeeCode: emp.employeeCode,
+        name: emp.name,
+        email: emp.email,
+        role: emp.role,
+        department: emp.department,
+        avatar: emp.avatar,
+        phone: emp.phone,
+        shiftId: emp.shiftId,
+        assignedLocationId: emp.assignedLocationId,
+        faceEnrolled: emp.faceEnrolled,
+        enrolledPhotoUrl: emp.enrolledPhotoUrl,
+        enrolledAt: emp.enrolledAt ? new Date(emp.enrolledAt) : null,
+        biometricConfidence: emp.biometricConfidence,
+        status: emp.status,
+      },
+    });
+  }
+
+  // Seed Records
+  for (const record of INITIAL_ATTENDANCE_RECORDS) {
+    await prisma.attendanceRecord.create({
+      data: {
+        id: record.id,
+        employeeId: record.employeeId,
+        employeeName: record.employeeName,
+        employeeCode: record.employeeCode,
+        department: record.department,
+        shiftName: record.shiftName,
+        punchType: record.punchType,
+        timestamp: new Date(record.timestamp),
+        serverTimestamp: new Date(record.serverTimestamp),
+        timeVerified: record.timeVerified,
+        timeFormatted: record.timeFormatted,
+        dateFormatted: record.dateFormatted,
+        location: record.location as any,
+        biometric: record.biometric as any,
+        status: record.status,
+        verificationHash: record.verificationHash,
+        deviceInfo: record.deviceInfo,
+        notes: record.notes,
+      },
+    });
+  }
+}
+
+export default async function Page() {
+  let locationCount = await prisma.workLocation.count();
+  
+  if (locationCount === 0) {
+    await seedDatabase();
+  }
+
+  // Fetch all data
+  const dbLocations = await prisma.workLocation.findMany();
+  const dbShifts = await prisma.workShift.findMany();
+  const dbEmployees = await prisma.employee.findMany();
+  const dbRecords = await prisma.attendanceRecord.findMany({
+    orderBy: { timestamp: 'desc' },
   });
 
-  const [locations, setLocations] = useState<WorkLocation[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bioclock_locations');
-      return saved ? JSON.parse(saved) : INITIAL_LOCATIONS;
-    }
-    return INITIAL_LOCATIONS;
-  });
+  // Map to frontend types
+  const initialLocations = dbLocations.map(loc => ({
+    ...loc,
+    isApprovedRemote: loc.isApprovedRemote ?? undefined,
+    color: loc.color ?? undefined,
+  }));
 
-  const [shifts, setShifts] = useState<WorkShift[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bioclock_shifts');
-      return saved ? JSON.parse(saved) : INITIAL_SHIFTS;
-    }
-    return INITIAL_SHIFTS;
-  });
+  const initialShifts = dbShifts.map(shift => ({
+    ...shift,
+  }));
 
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bioclock_records');
-      return saved ? JSON.parse(saved) : INITIAL_ATTENDANCE_RECORDS;
-    }
-    return INITIAL_ATTENDANCE_RECORDS;
-  });
+  const initialEmployees = dbEmployees.map(emp => ({
+    ...emp,
+    avatar: emp.avatar ?? '',
+    phone: emp.phone ?? '',
+    enrolledPhotoUrl: emp.enrolledPhotoUrl ?? undefined,
+    enrolledAt: emp.enrolledAt ? emp.enrolledAt.toISOString() : undefined,
+    biometricConfidence: emp.biometricConfidence ?? undefined,
+  }));
 
-  // Active view state
-  const [activeView, setActiveView] = useState<'TERMINAL' | 'HISTORY' | 'ADMIN'>('TERMINAL');
-
-  // Selected Employee for active testing
-  const [currentEmployeeId, setCurrentEmployeeId] = useState<string>(employees[0]?.id || 'emp_01');
-  const currentEmployee = employees.find((e) => e.id === currentEmployeeId) || employees[0];
-
-  // Modals state
-  const [selectedReceiptRecord, setSelectedReceiptRecord] = useState<AttendanceRecord | null>(null);
-  const [enrollmentEmployee, setEnrollmentEmployee] = useState<Employee | null>(null);
-
-  // Sync to local storage
-  useEffect(() => {
-    localStorage.setItem('bioclock_employees', JSON.stringify(employees));
-  }, [employees]);
-
-  useEffect(() => {
-    localStorage.setItem('bioclock_locations', JSON.stringify(locations));
-  }, [locations]);
-
-  useEffect(() => {
-    localStorage.setItem('bioclock_shifts', JSON.stringify(shifts));
-  }, [shifts]);
-
-  useEffect(() => {
-    localStorage.setItem('bioclock_records', JSON.stringify(attendanceRecords));
-  }, [attendanceRecords]);
-
-  // Handlers
-  const handleAttendanceSuccess = (record: AttendanceRecord) => {
-    setAttendanceRecords((prev) => [record, ...prev]);
-    setSelectedReceiptRecord(record);
-  };
-
-  const handleOpenEnrollment = (emp: Employee) => {
-    setEnrollmentEmployee(emp);
-  };
-
-  const handleEnrollmentComplete = (employeeId: string, photoUrl: string) => {
-    setEmployees((prev) =>
-      prev.map((emp) =>
-        emp.id === employeeId
-          ? {
-              ...emp,
-              faceEnrolled: true,
-              enrolledPhotoUrl: photoUrl,
-              enrolledAt: new Date().toISOString(),
-              biometricConfidence: 98.7,
-            }
-          : emp
-      )
-    );
-  };
-
-  const handleAddLocation = (newLoc: WorkLocation) => {
-    setLocations((prev) => [...prev, newLoc]);
-  };
-
-  const handleUpdateLocation = (updatedLoc: WorkLocation) => {
-    setLocations((prev) => prev.map((l) => (l.id === updatedLoc.id ? updatedLoc : l)));
-  };
-
-  const handleDeleteLocation = (id: string) => {
-    setLocations((prev) => prev.filter((l) => l.id !== id));
-  };
-
-  const handleAddEmployee = (newEmp: Employee) => {
-    setEmployees((prev) => [...prev, newEmp]);
-    setCurrentEmployeeId(newEmp.id);
-  };
+  const initialRecords = dbRecords.map(record => ({
+    ...record,
+    timestamp: record.timestamp.toISOString(),
+    serverTimestamp: record.serverTimestamp.toISOString(),
+    notes: record.notes ?? undefined,
+    location: record.location as any,
+    biometric: record.biometric as any,
+  }));
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
-      {/* Top Application Header */}
-      <Header
-        activeView={activeView}
-        setActiveView={setActiveView}
-        employees={employees}
-        currentEmployee={currentEmployee}
-        onSelectEmployee={(emp) => setCurrentEmployeeId(emp.id)}
-        onOpenEnrollment={handleOpenEnrollment}
-      />
-
-      {/* Main Viewport Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {activeView === 'TERMINAL' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            {/* View Header Info */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                  Active Presence Station
-                </p>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-                  <span>Biometric Verification Terminal</span>
-                </h1>
-                <p className="text-sm text-slate-500 mt-1">
-                  Position face within the reticle for 3D anti-spoof biometric authentication & GPS geofence stamping.
-                </p>
-              </div>
-              <div className="flex items-center gap-2.5 text-xs">
-                <span className="text-slate-500 font-medium">Logged in Personnel:</span>
-                <span className="bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-sm text-blue-700 font-bold">
-                  {currentEmployee.name} • {currentEmployee.department}
-                </span>
-              </div>
-            </div>
-
-            {/* Punch Terminal Main Component */}
-            <PunchTerminal
-              currentEmployee={currentEmployee}
-              locations={locations}
-              shifts={shifts}
-              onAttendanceSuccess={handleAttendanceSuccess}
-              onOpenEnrollment={handleOpenEnrollment}
-            />
-          </div>
-        )}
-
-        {activeView === 'HISTORY' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="border-b border-slate-200 pb-4">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                Cryptographic Audit Trail
-              </p>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-                Attendance Audit & Digital Slips
-              </h1>
-              <p className="text-sm text-slate-500 mt-1">
-                Cryptographically signed attendance records with biometric match confidence and GPS perimeter verification.
-              </p>
-            </div>
-
-            <AttendanceHistory
-              records={attendanceRecords}
-              employees={employees}
-              onSelectRecord={(rec) => setSelectedReceiptRecord(rec)}
-            />
-          </div>
-        )}
-
-        {activeView === 'ADMIN' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="border-b border-slate-200 pb-4">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                System Parameters & Sites
-              </p>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-                Workplace Geofences & Biometric Control Center
-              </h1>
-              <p className="text-sm text-slate-500 mt-1">
-                Configure workplace geofence perimeters, register employee facial profiles, and set work shift policies.
-              </p>
-            </div>
-
-            <AdminDashboard
-              locations={locations}
-              shifts={shifts}
-              employees={employees}
-              onAddLocation={handleAddLocation}
-              onUpdateLocation={handleUpdateLocation}
-              onDeleteLocation={handleDeleteLocation}
-              onAddEmployee={handleAddEmployee}
-              onOpenEnrollment={handleOpenEnrollment}
-            />
-          </div>
-        )}
-      </main>
-
-      {/* Verification Receipt Slip Modal */}
-      <VerificationReceiptModal
-        record={selectedReceiptRecord}
-        onClose={() => setSelectedReceiptRecord(null)}
-      />
-
-      {/* Facial Biometric Enrollment Wizard Modal */}
-      {enrollmentEmployee && (
-        <FaceEnrollmentModal
-          employee={enrollmentEmployee}
-          isOpen={!!enrollmentEmployee}
-          onClose={() => setEnrollmentEmployee(null)}
-          onEnrollmentComplete={handleEnrollmentComplete}
-        />
-      )}
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-5 text-center text-xs text-slate-500 mt-12">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
-              <div className="w-1.5 h-1.5 border border-white rounded-[1px]"></div>
-            </div>
-            <span className="font-semibold text-slate-700">BioClock Flow • Geometric Balanced Attendance Engine</span>
-          </div>
-          <span className="font-mono text-xs text-slate-500">
-            SHA-256 Tamper Evident Verification • Gemini AI Biometrics
-          </span>
-        </div>
-      </footer>
-    </div>
+    <ClientApp 
+      initialLocations={initialLocations as any}
+      initialShifts={initialShifts as any}
+      initialEmployees={initialEmployees as any}
+      initialRecords={initialRecords as any}
+    />
   );
 }

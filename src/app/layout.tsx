@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'BioClock - Geometric Balanced Attendance Engine',
+  title: 'E-Presence - Geometric Balanced Attendance Engine',
   description: 'Biometric Verification Terminal for E-Absensi',
 };
 

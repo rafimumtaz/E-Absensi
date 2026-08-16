@@ -1,5 +1,8 @@
 import prisma from '../lib/prisma';
 import { ClientApp } from './ClientApp';
+import { getSession } from '../lib/session';
+import { redirect } from 'next/navigation';
+import bcrypt from 'bcryptjs';
 import {
   INITIAL_LOCATIONS,
   INITIAL_SHIFTS,
@@ -45,6 +48,7 @@ async function seedDatabase() {
   }
 
   // Seed Employees
+  const defaultPassword = await bcrypt.hash('password123', 10);
   for (const emp of INITIAL_EMPLOYEES) {
     await prisma.employee.create({
       data: {
@@ -52,6 +56,7 @@ async function seedDatabase() {
         employeeCode: emp.employeeCode,
         name: emp.name,
         email: emp.email,
+        password: defaultPassword,
         role: emp.role,
         department: emp.department,
         avatar: emp.avatar,
@@ -95,6 +100,11 @@ async function seedDatabase() {
 }
 
 export default async function Page() {
+  const session = await getSession();
+  if (!session) {
+    redirect('/login');
+  }
+
   let locationCount = await prisma.workLocation.count();
   
   if (locationCount === 0) {
@@ -105,9 +115,27 @@ export default async function Page() {
   const dbLocations = await prisma.workLocation.findMany();
   const dbShifts = await prisma.workShift.findMany();
   const dbEmployees = await prisma.employee.findMany();
-  const dbRecords = await prisma.attendanceRecord.findMany({
-    orderBy: { timestamp: 'desc' },
+  
+  // RBAC for Attendance Records
+  let dbRecords;
+  if (session.role === 'admin') {
+    dbRecords = await prisma.attendanceRecord.findMany({
+      orderBy: { timestamp: 'desc' },
+    });
+  } else {
+    dbRecords = await prisma.attendanceRecord.findMany({
+      where: { employeeId: session.employeeId },
+      orderBy: { timestamp: 'desc' },
+    });
+  }
+
+  const currentUserData = await prisma.employee.findUnique({
+    where: { id: session.employeeId }
   });
+
+  if (!currentUserData) {
+    redirect('/login');
+  }
 
   // Map to frontend types
   const initialLocations = dbLocations.map(loc => ({
@@ -138,8 +166,18 @@ export default async function Page() {
     biometric: record.biometric as any,
   }));
 
+  const sessionUser = {
+    ...currentUserData,
+    avatar: currentUserData.avatar ?? '',
+    phone: currentUserData.phone ?? '',
+    enrolledPhotoUrl: currentUserData.enrolledPhotoUrl ?? undefined,
+    enrolledAt: currentUserData.enrolledAt ? currentUserData.enrolledAt.toISOString() : undefined,
+    biometricConfidence: currentUserData.biometricConfidence ?? undefined,
+  };
+
   return (
     <ClientApp 
+      sessionUser={sessionUser as any}
       initialLocations={initialLocations as any}
       initialShifts={initialShifts as any}
       initialEmployees={initialEmployees as any}

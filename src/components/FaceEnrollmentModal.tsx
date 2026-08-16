@@ -159,21 +159,21 @@ export const FaceEnrollmentModal: React.FC<FaceEnrollmentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in">
-      <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden my-6 text-slate-900">
+      <div className="relative w-full max-w-lg bg-white border border-[#e4e2d7] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden my-6 text-[#13201a]">
         {/* Header */}
-        <div className="px-6 py-4.5 flex items-center justify-between border-b border-slate-200 bg-slate-50/70">
+        <div className="px-6 py-4.5 flex items-center justify-between border-b border-[#e4e2d7] bg-[#fafaf8]/70">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
+            <div className="w-9 h-9 rounded-xl bg-[#f0eee4] border border-[#e4e2d7] flex items-center justify-center text-[#2a4536]">
               <Shield className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 text-base">Biometric Face Enrollment</h3>
-              <p className="text-xs text-slate-500">Register Reference Template for {employee.name}</p>
+              <h3 className="font-bold text-[#13201a] text-base">Biometric Face Enrollment</h3>
+              <p className="text-xs text-[#6b6e68]">Register Reference Template for {employee.name}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-xl text-[#8b8e88] hover:text-[#3b3e38] hover:bg-[#f3f2eb] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -181,15 +181,15 @@ export const FaceEnrollmentModal: React.FC<FaceEnrollmentModalProps> = ({
 
         <div className="p-6 space-y-4">
           {/* Employee Info Pill */}
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#fafaf8] border border-[#e4e2d7]">
             <img
               src={employee.avatar}
               alt={employee.name}
-              className="w-10 h-10 rounded-full object-cover border border-slate-200"
+              className="w-10 h-10 rounded-full object-cover border border-[#e4e2d7]"
             />
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-bold text-slate-900 truncate">{employee.name}</h4>
-              <p className="text-xs text-slate-500">{employee.role} • <span className="font-mono text-blue-600 font-bold">{employee.employeeCode}</span></p>
+              <h4 className="text-sm font-bold text-[#13201a] truncate">{employee.name}</h4>
+              <p className="text-xs text-[#6b6e68]">{employee.role} • <span className="font-mono text-[#2a4536] font-bold">{employee.employeeCode}</span></p>
             </div>
             <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${employee.faceEnrolled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
               {employee.faceEnrolled ? 'ENROLLED' : 'PENDING'}
@@ -224,7 +224,7 @@ export const FaceEnrollmentModal: React.FC<FaceEnrollmentModalProps> = ({
               </>
             ) : (
               <div className="text-center p-6 space-y-3 text-white">
-                <Camera className="w-10 h-10 text-slate-400 mx-auto" />
+                <Camera className="w-10 h-10 text-[#8b8e88] mx-auto" />
                 <p className="text-xs text-slate-300">{cameraError || 'Initializing camera stream...'}</p>
                 <button
                   onClick={startCamera}
@@ -240,9 +240,9 @@ export const FaceEnrollmentModal: React.FC<FaceEnrollmentModalProps> = ({
 
           {/* Guidelines */}
           {!capturedPhoto && (
-            <div className="text-xs text-slate-600 space-y-1.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-              <p className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">Enrollment Best Practices</p>
-              <ul className="list-disc list-inside space-y-0.5 text-[11px] text-slate-600">
+            <div className="text-xs text-[#4b4e48] space-y-1.5 bg-[#fafaf8] p-3.5 rounded-2xl border border-[#e4e2d7]">
+              <p className="font-bold text-[#2b2e28] uppercase tracking-wider text-[11px]">Enrollment Best Practices</p>
+              <ul className="list-disc list-inside space-y-0.5 text-[11px] text-[#4b4e48]">
                 <li>Face the camera directly with good ambient lighting</li>
                 <li>Remove sunglasses or hats that obscure facial features</li>
                 <li>Maintain a neutral or relaxed expression</li>
@@ -252,8 +252,8 @@ export const FaceEnrollmentModal: React.FC<FaceEnrollmentModalProps> = ({
 
           {/* AI Quality Check Feedback */}
           {isAnalyzing && (
-            <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl flex items-center gap-3 text-blue-700 text-xs animate-pulse font-medium">
-              <RefreshCw className="w-4 h-4 animate-spin shrink-0 text-blue-600" />
+            <div className="p-3.5 bg-[#f0eee4] border border-[#e4e2d7] rounded-2xl flex items-center gap-3 text-[#13201a] text-xs animate-pulse font-medium">
+              <RefreshCw className="w-4 h-4 animate-spin shrink-0 text-[#2a4536]" />
               <span>Analyzing facial landmark geometry & lighting quality with Gemini AI...</span>
             </div>
           )}
@@ -273,17 +273,17 @@ export const FaceEnrollmentModal: React.FC<FaceEnrollmentModalProps> = ({
                   Lighting: {analysisResult.lighting}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-700 font-medium">{analysisResult.feedback}</p>
+              <p className="text-[11px] text-[#3b3e38] font-medium">{analysisResult.feedback}</p>
             </div>
           )}
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+        <div className="px-6 py-4 bg-[#fafaf8] border-t border-[#e4e2d7] flex items-center justify-between">
           {!capturedPhoto ? (
             <div className="flex items-center justify-between w-full">
-              <label className="cursor-pointer px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-200 shadow-xs">
-                <Upload className="w-3.5 h-3.5 text-slate-500" />
+              <label className="cursor-pointer px-4 py-2 rounded-xl bg-white hover:bg-[#f3f2eb] text-[#3b3e38] text-xs font-semibold flex items-center gap-1.5 transition-colors border border-[#e4e2d7] shadow-xs">
+                <Upload className="w-3.5 h-3.5 text-[#6b6e68]" />
                 Upload Photo
                 <input
                   type="file"
@@ -296,7 +296,7 @@ export const FaceEnrollmentModal: React.FC<FaceEnrollmentModalProps> = ({
               <button
                 onClick={captureSnapshot}
                 disabled={!cameraActive}
-                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-blue-500/20 transition-all"
+                className="px-5 py-2.5 rounded-xl bg-[#13201a] hover:bg-[#13201a] disabled:opacity-50 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-[#13201a]/20 transition-all"
               >
                 <Camera className="w-4 h-4" />
                 Capture Template
@@ -306,7 +306,7 @@ export const FaceEnrollmentModal: React.FC<FaceEnrollmentModalProps> = ({
             <div className="flex items-center justify-between w-full">
               <button
                 onClick={retake}
-                className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-200 shadow-xs"
+                className="px-4 py-2 rounded-xl bg-white hover:bg-[#f3f2eb] text-[#3b3e38] text-xs font-semibold flex items-center gap-1.5 transition-colors border border-[#e4e2d7] shadow-xs"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Retake Photo

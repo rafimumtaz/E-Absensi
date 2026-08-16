@@ -128,13 +128,13 @@ export const GPSRadarMap: React.FC<GPSRadarMapProps> = ({
       {/* Stats footer */}
       <div className="grid grid-cols-2 gap-2.5 w-full pt-3 mt-1 border-t border-slate-800 text-center">
         <div className="bg-slate-800/80 py-1.5 px-2 rounded-xl">
-          <span className="text-[10px] text-slate-400 block font-medium">Distance to Site</span>
+          <span className="text-[10px] text-[#8b8e88] block font-medium">Distance to Site</span>
           <span className={`text-xs font-mono font-bold ${isWithin ? 'text-emerald-400' : 'text-amber-400'}`}>
             {distanceMeters} meters
           </span>
         </div>
         <div className="bg-slate-800/80 py-1.5 px-2 rounded-xl">
-          <span className="text-[10px] text-slate-400 block font-medium">GPS Precision</span>
+          <span className="text-[10px] text-[#8b8e88] block font-medium">GPS Precision</span>
           <span className="text-xs font-mono font-bold text-blue-400">
             ±{Math.round(accuracyMeters)}m
           </span>

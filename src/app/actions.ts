@@ -3,6 +3,17 @@
 import prisma from '../lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { AttendanceRecord, Employee, WorkLocation } from '../types';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+
+const s3Client = new S3Client({
+  endpoint: process.env.S3_ENDPOINT,
+  region: process.env.S3_REGION,
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+  },
+  forcePathStyle: true,
+});
 
 export async function createAttendanceRecord(record: AttendanceRecord) {
   try {
@@ -39,11 +50,33 @@ export async function createAttendanceRecord(record: AttendanceRecord) {
 
 export async function enrollEmployeeFace(employeeId: string, photoUrl: string) {
   try {
+    let finalPhotoUrl = photoUrl;
+    
+    // If it's a base64 string from the webcam/upload
+    if (photoUrl.startsWith('data:image')) {
+      const base64Data = photoUrl.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      const filename = `face_${employeeId}_${Date.now()}.jpg`;
+
+      await s3Client.send(new PutObjectCommand({
+        Bucket: 'Face',
+        Key: filename,
+        Body: buffer,
+        ContentType: 'image/jpeg',
+      }));
+
+      // Construct the public URL for Supabase
+      // Assuming S3_ENDPOINT is something like https://id.storage.supabase.co/storage/v1/s3
+      const baseUrl = process.env.S3_ENDPOINT!.replace('.storage', '').replace('/s3', '');
+      finalPhotoUrl = `${baseUrl}/object/public/Face/${filename}`;
+    }
+
     await prisma.employee.update({
       where: { id: employeeId },
       data: {
         faceEnrolled: true,
-        enrolledPhotoUrl: photoUrl,
+        enrolledPhotoUrl: finalPhotoUrl,
+        avatar: finalPhotoUrl, // Also update the avatar to the new photo
         enrolledAt: new Date(),
         biometricConfidence: 98.7, // As per mock data logic
       },
@@ -121,9 +154,45 @@ export async function deleteWorkLocationAction(id: string) {
 
 export async function addEmployeeAction(employee: Employee) {
   try {
+    // If not provided a password, default to a hashed 'password123'
+    // This is a naive workaround for adding employees from admin dashboard
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash('password123', 10);
+    
     await prisma.employee.create({
       data: {
         id: employee.id,
+        employeeCode: employee.employeeCode,
+        name: employee.name,
+        email: employee.email,
+        password: hashedPassword,
+        role: employee.role,
+        department: employee.department,
+        avatar: employee.avatar,
+        phone: employee.phone,
+        shiftId: employee.shiftId,
+        assignedLocationId: employee.assignedLocationId,
+        faceEnrolled: employee.faceEnrolled,
+        enrolledPhotoUrl: employee.enrolledPhotoUrl,
+        enrolledAt: employee.enrolledAt ? new Date(employee.enrolledAt) : null,
+        biometricConfidence: employee.biometricConfidence,
+        status: employee.status,
+      },
+    });
+    
+    revalidatePath('/');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to add employee:', error);
+    return { success: false, error: 'Failed to add employee' };
+  }
+}
+
+export async function updateEmployeeAction(employee: Employee) {
+  try {
+    await prisma.employee.update({
+      where: { id: employee.id },
+      data: {
         employeeCode: employee.employeeCode,
         name: employee.name,
         email: employee.email,
@@ -144,7 +213,25 @@ export async function addEmployeeAction(employee: Employee) {
     revalidatePath('/');
     return { success: true };
   } catch (error) {
-    console.error('Failed to add employee:', error);
-    return { success: false, error: 'Failed to add employee' };
+    console.error('Failed to update employee:', error);
+    return { success: false, error: 'Failed to update employee' };
+  }
+}
+
+export async function deleteEmployeeAction(id: string) {
+  try {
+    // Also delete their attendance records first due to foreign key
+    await prisma.attendanceRecord.deleteMany({
+      where: { employeeId: id },
+    });
+    await prisma.employee.delete({
+      where: { id },
+    });
+    
+    revalidatePath('/');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to delete employee:', error);
+    return { success: false, error: 'Failed to delete employee' };
   }
 }

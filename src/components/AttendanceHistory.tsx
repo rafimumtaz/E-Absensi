@@ -106,53 +106,53 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Top Metrics Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm text-slate-900">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Total Records</span>
+        <div className="bg-white border border-[#e4e2d7] p-5 rounded-2xl shadow-sm text-[#13201a]">
+          <span className="text-xs font-bold text-[#8b8e88] uppercase tracking-widest block">Total Records</span>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-light font-mono text-blue-600">{total}</span>
-            <span className="text-xs text-slate-500 font-medium">punches</span>
+            <span className="text-3xl font-light font-mono text-[#2a4536]">{total}</span>
+            <span className="text-xs text-[#6b6e68] font-medium">punches</span>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm text-slate-900">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Punctuality Rate</span>
+        <div className="bg-white border border-[#e4e2d7] p-5 rounded-2xl shadow-sm text-[#13201a]">
+          <span className="text-xs font-bold text-[#8b8e88] uppercase tracking-widest block">Punctuality Rate</span>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-3xl font-light font-mono text-emerald-600">{punctualityRate}%</span>
-            <span className="text-xs text-slate-500 font-medium">on schedule</span>
+            <span className="text-xs text-[#6b6e68] font-medium">on schedule</span>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm text-slate-900">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Avg Biometric Match</span>
+        <div className="bg-white border border-[#e4e2d7] p-5 rounded-2xl shadow-sm text-[#13201a]">
+          <span className="text-xs font-bold text-[#8b8e88] uppercase tracking-widest block">Avg Biometric Match</span>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-light font-mono text-slate-900">{avgBiometricScore}%</span>
-            <span className="text-xs text-slate-500 font-medium">accuracy</span>
+            <span className="text-3xl font-light font-mono text-[#13201a]">{avgBiometricScore}%</span>
+            <span className="text-xs text-[#6b6e68] font-medium">accuracy</span>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm text-slate-900">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Geofence Flagged</span>
+        <div className="bg-white border border-[#e4e2d7] p-5 rounded-2xl shadow-sm text-[#13201a]">
+          <span className="text-xs font-bold text-[#8b8e88] uppercase tracking-widest block">Geofence Flagged</span>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className={`text-3xl font-light font-mono ${geofenceBreachCount > 0 ? 'text-amber-600' : 'text-slate-900'}`}>
+            <span className={`text-3xl font-light font-mono ${geofenceBreachCount > 0 ? 'text-amber-600' : 'text-[#13201a]'}`}>
               {geofenceBreachCount}
             </span>
-            <span className="text-xs text-slate-500 font-medium">exceptions</span>
+            <span className="text-xs text-[#6b6e68] font-medium">exceptions</span>
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm overflow-hidden text-slate-800">
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-[#e4e2d7] shadow-sm overflow-hidden text-[#2b2e28]">
         {/* Filter Controls Bar */}
-        <div className="p-5 border-b border-slate-200 flex flex-col md:flex-row gap-3 items-center justify-between bg-slate-50/70">
+        <div className="p-5 border-b border-[#e4e2d7] flex flex-col md:flex-row gap-3 items-center justify-between bg-[#fafaf8]/70">
           <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#8b8e88] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search employee, code, or hash..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 shadow-xs transition-colors"
+              className="w-full bg-white border border-[#e4e2d7] rounded-xl pl-10 pr-4 py-2 text-xs text-[#2b2e28] placeholder-slate-400 focus:outline-none focus:border-[#13201a] shadow-xs transition-colors"
             />
           </div>
 
@@ -161,7 +161,7 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 font-medium focus:outline-none focus:border-blue-600 shadow-xs"
+              className="bg-white border border-[#e4e2d7] rounded-xl px-3 py-2 text-xs text-[#3b3e38] font-medium focus:outline-none focus:border-[#13201a] shadow-xs"
             >
               <option value="ALL">All Statuses</option>
               <option value="ON_TIME">On Time</option>
@@ -174,7 +174,7 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
             <select
               value={departmentFilter}
               onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 font-medium focus:outline-none focus:border-blue-600 shadow-xs"
+              className="bg-white border border-[#e4e2d7] rounded-xl px-3 py-2 text-xs text-[#3b3e38] font-medium focus:outline-none focus:border-[#13201a] shadow-xs"
             >
               <option value="ALL">All Departments</option>
               {departments.map((dept) => (
@@ -187,7 +187,7 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
             {/* Export CSV Button */}
             <button
               onClick={exportCsv}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-blue-500/20 transition-colors shrink-0"
+              className="px-4 py-2 rounded-xl bg-[#13201a] hover:bg-[#13201a] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-[#13201a]/20 transition-colors shrink-0"
             >
               <FileSpreadsheet className="w-3.5 h-3.5" />
               Export CSV
@@ -198,7 +198,7 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
         {/* Attendance Records Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100/70 text-slate-500 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+            <thead className="bg-[#f3f2eb]/70 text-[#6b6e68] font-bold uppercase tracking-wider text-[11px] border-b border-[#e4e2d7]">
               <tr>
                 <th className="py-3.5 px-4">Employee</th>
                 <th className="py-3.5 px-4">Action & Shift</th>
@@ -212,7 +212,7 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
             <tbody className="divide-y divide-slate-100">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-slate-400">
+                  <td colSpan={7} className="text-center py-12 text-[#8b8e88]">
                     No attendance records found matching current criteria.
                   </td>
                 </tr>
@@ -222,7 +222,7 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
                     <tr
                       key={record.id}
                       onClick={() => onSelectRecord(record)}
-                      className="hover:bg-blue-50/40 cursor-pointer transition-colors group"
+                      className="hover:bg-[#f0eee4]/40 cursor-pointer transition-colors group"
                     >
                       {/* Employee Info */}
                       <td className="py-3.5 px-4">
@@ -230,13 +230,13 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
                           <img
                             src={record.biometric.snapshotUrl}
                             alt={record.employeeName}
-                            className="w-8 h-8 rounded-full object-cover border border-slate-200 group-hover:border-blue-500 transition-colors"
+                            className="w-8 h-8 rounded-full object-cover border border-[#e4e2d7] group-hover:border-[#2a4536] transition-colors"
                           />
                           <div>
-                            <span className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors block">
+                            <span className="font-bold text-[#13201a] group-hover:text-[#2a4536] transition-colors block">
                               {record.employeeName}
                             </span>
-                            <span className="text-[10px] font-mono text-slate-500 font-medium">
+                            <span className="text-[10px] font-mono text-[#6b6e68] font-medium">
                               {record.employeeCode} • {record.department}
                             </span>
                           </div>
@@ -245,25 +245,25 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
 
                       {/* Punch Type */}
                       <td className="py-3.5 px-4">
-                        <span className="font-mono font-bold text-slate-900 block">
+                        <span className="font-mono font-bold text-[#13201a] block">
                           {record.punchType.replace('_', ' ')}
                         </span>
-                        <span className="text-[11px] text-slate-500 font-medium">{record.shiftName}</span>
+                        <span className="text-[11px] text-[#6b6e68] font-medium">{record.shiftName}</span>
                       </td>
 
                       {/* Timestamp */}
                       <td className="py-3.5 px-4">
-                        <div className="font-mono font-semibold text-slate-900 flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-slate-400" />
+                        <div className="font-mono font-semibold text-[#13201a] flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-[#8b8e88]" />
                           {record.timeFormatted}
                         </div>
-                        <span className="text-[11px] text-slate-500">{record.dateFormatted}</span>
+                        <span className="text-[11px] text-[#6b6e68]">{record.dateFormatted}</span>
                       </td>
 
                       {/* Biometric Match */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-14 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                          <div className="w-14 bg-[#e4e2d7] rounded-full h-1.5 overflow-hidden">
                             <div
                               className="bg-emerald-500 h-full rounded-full"
                               style={{ width: `${record.biometric.matchScore}%` }}
@@ -273,18 +273,18 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
                             {record.biometric.matchScore.toFixed(1)}%
                           </span>
                         </div>
-                        <span className="text-[10px] text-slate-500 block mt-0.5">
+                        <span className="text-[10px] text-[#6b6e68] block mt-0.5">
                           Liveness: {record.biometric.livenessScore.toFixed(1)}% • 3D OK
                         </span>
                       </td>
 
                       {/* Location & Geofence */}
                       <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1 font-semibold text-slate-800 truncate max-w-[180px]">
-                          <MapPin className={`w-3.5 h-3.5 shrink-0 ${record.location.isWithinGeofence ? 'text-blue-600' : 'text-amber-600'}`} />
+                        <div className="flex items-center gap-1 font-semibold text-[#2b2e28] truncate max-w-[180px]">
+                          <MapPin className={`w-3.5 h-3.5 shrink-0 ${record.location.isWithinGeofence ? 'text-[#2a4536]' : 'text-amber-600'}`} />
                           <span className="truncate">{record.location.workLocationName}</span>
                         </div>
-                        <span className={`text-[10px] font-mono ${record.location.isWithinGeofence ? 'text-slate-500' : 'text-amber-700 font-bold'}`}>
+                        <span className={`text-[10px] font-mono ${record.location.isWithinGeofence ? 'text-[#6b6e68]' : 'text-amber-700 font-bold'}`}>
                           {record.location.isWithinGeofence ? `In perimeter (${record.location.distanceMeters}m)` : `Outside (${record.location.distanceMeters}m)`}
                         </span>
                       </td>
@@ -295,7 +295,7 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
                           record.status === 'ON_TIME' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                           record.status === 'LATE' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                           record.status === 'GEOFENCE_BREACH' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                          'bg-blue-50 text-blue-700 border border-blue-200'
+                          'bg-[#f0eee4] text-[#13201a] border border-[#e4e2d7]'
                         }`}>
                           <CheckCircle2 className="w-3 h-3" />
                           {record.status.replace('_', ' ')}
@@ -304,7 +304,7 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
 
                       {/* Action */}
                       <td className="py-3.5 px-4 text-right">
-                        <span className="text-slate-400 group-hover:text-blue-600 font-mono text-[11px] font-medium inline-flex items-center gap-1">
+                        <span className="text-[#8b8e88] group-hover:text-[#2a4536] font-mono text-[11px] font-medium inline-flex items-center gap-1">
                           View Slip
                           <ChevronRight className="w-3.5 h-3.5" />
                         </span>

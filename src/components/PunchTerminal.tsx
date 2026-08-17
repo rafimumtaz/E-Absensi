@@ -34,6 +34,7 @@ interface PunchTerminalProps {
   currentEmployee: Employee;
   locations: WorkLocation[];
   shifts: WorkShift[];
+  records?: AttendanceRecord[];
   onAttendanceSuccess: (record: AttendanceRecord) => void;
   onOpenEnrollment: (employee: Employee) => void;
 }
@@ -42,6 +43,7 @@ export const PunchTerminal: React.FC<PunchTerminalProps> = ({
   currentEmployee,
   locations,
   shifts,
+  records,
   onAttendanceSuccess,
   onOpenEnrollment,
 }) => {
@@ -65,6 +67,21 @@ export const PunchTerminal: React.FC<PunchTerminalProps> = ({
   // Time State
   const [currentTime, setCurrentTime] = useState(new Date());
   const [serverTimeSynced, setServerTimeSynced] = useState(true);
+
+  // Break Logic State
+  const isBreakTime = currentTime.getHours() === 12; // 12:00 PM to 12:59 PM
+  const [isOnBreak, setIsOnBreak] = useState(() => {
+    if (!records) return false;
+    const today = new Date().toDateString();
+    const myRecords = records.filter(
+      (r) => r.employeeId === currentEmployee.id && new Date(r.timestamp).toDateString() === today
+    );
+    if (myRecords.length === 0) return false;
+    const lastRecord = myRecords.sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )[0];
+    return lastRecord.punchType === 'BREAK_START';
+  });
 
   // Punch Processing State
   const [isProcessing, setIsProcessing] = useState(false);
@@ -342,6 +359,14 @@ export const PunchTerminal: React.FC<PunchTerminalProps> = ({
       });
 
       onAttendanceSuccess(record);
+
+      if (punchType === 'BREAK_START') {
+        setIsOnBreak(true);
+        setPunchType('BREAK_END');
+      } else if (punchType === 'BREAK_END') {
+        setIsOnBreak(false);
+        setPunchType('CLOCK_OUT');
+      }
     } catch (err: any) {
       console.error('Punch execution error:', err);
     } finally {
@@ -482,30 +507,36 @@ export const PunchTerminal: React.FC<PunchTerminalProps> = ({
 
               <button
                 type="button"
+                disabled={!isBreakTime}
                 onClick={() => setPunchType('BREAK_START')}
                 className={`py-3 px-3 rounded-2xl font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all ${
-                  punchType === 'BREAK_START'
+                  !isBreakTime
+                    ? 'bg-[#e4e2d7] text-[#9ca3af] cursor-not-allowed border border-[#d4d2c7]'
+                    : punchType === 'BREAK_START'
                     ? 'bg-[#13201a] text-white shadow-lg shadow-[#13201a]/30 ring-2 ring-[#13201a]'
                     : 'bg-white hover:bg-[#f3f2eb] text-[#3b3e38] border border-[#e4e2d7]'
                 }`}
               >
                 <span>Take Break</span>
-                <span className={`text-[10px] font-normal ${punchType === 'BREAK_START' ? 'text-emerald-100' : 'text-[#8b8e88]'}`}>
+                <span className={`text-[10px] font-normal ${!isBreakTime ? 'text-[#9ca3af]' : punchType === 'BREAK_START' ? 'text-emerald-100' : 'text-[#8b8e88]'}`}>
                   Meal / Rest
                 </span>
               </button>
 
               <button
                 type="button"
+                disabled={!isOnBreak}
                 onClick={() => setPunchType('BREAK_END')}
                 className={`py-3 px-3 rounded-2xl font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all ${
-                  punchType === 'BREAK_END'
+                  !isOnBreak
+                    ? 'bg-[#e4e2d7] text-[#9ca3af] cursor-not-allowed border border-[#d4d2c7]'
+                    : punchType === 'BREAK_END'
                     ? 'bg-[#13201a] text-white shadow-lg shadow-[#13201a]/30 ring-2 ring-[#13201a]'
                     : 'bg-white hover:bg-[#f3f2eb] text-[#3b3e38] border border-[#e4e2d7]'
                 }`}
               >
                 <span>End Break</span>
-                <span className={`text-[10px] font-normal ${punchType === 'BREAK_END' ? 'text-emerald-100' : 'text-[#8b8e88]'}`}>
+                <span className={`text-[10px] font-normal ${!isOnBreak ? 'text-[#9ca3af]' : punchType === 'BREAK_END' ? 'text-emerald-100' : 'text-[#8b8e88]'}`}>
                   Resume Work
                 </span>
               </button>

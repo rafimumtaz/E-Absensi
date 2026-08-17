@@ -159,6 +159,7 @@ export function ClientApp({
               currentEmployee={sessionUser}
               locations={initialLocations}
               shifts={initialShifts}
+              records={initialRecords}
               onAttendanceSuccess={handleAttendanceSuccess}
               onOpenEnrollment={handleOpenEnrollment}
             />

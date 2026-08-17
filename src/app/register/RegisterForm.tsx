@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Shield, ArrowRight, UserPlus } from 'lucide-react';
+import { Shield, ArrowRight, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { register } from '../actions/auth';
 import { WorkLocation, WorkShift } from '../../types';
 
@@ -14,6 +14,7 @@ interface RegisterFormProps {
 export default function RegisterForm({ locations, shifts }: RegisterFormProps) {
   const [error, setError] = useState('');
   const [isPending, startTransition] = useTransition();
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(formData: FormData) {
     setError('');
@@ -86,13 +87,26 @@ export default function RegisterForm({ locations, shifts }: RegisterFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-[#3b3e38]">Password</label>
-              <input
-                name="password"
-                type="password"
-                required
-                className="mt-1 appearance-none block w-full px-4 py-3 border border-[#d4d2c7] rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-[#2a4536] sm:text-sm"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  className="mt-1 appearance-none block w-full px-4 py-3 border border-[#d4d2c7] rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-[#2a4536] sm:text-sm pr-10"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 pt-1 flex items-center text-[#6b6e68] hover:text-[#3b3e38] transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-5 w-5" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

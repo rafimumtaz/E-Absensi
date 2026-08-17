@@ -51,27 +51,15 @@ export default function RegisterForm({ locations, shifts }: RegisterFormProps) {
               </div>
             )}
             
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[#3b3e38]">Full Name</label>
-                <input
-                  name="name"
-                  type="text"
-                  required
-                  className="mt-1 appearance-none block w-full px-4 py-3 border border-[#d4d2c7] rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-[#2a4536] sm:text-sm"
-                  placeholder="John Doe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#3b3e38]">Employee Code</label>
-                <input
-                  name="employeeCode"
-                  type="text"
-                  required
-                  className="mt-1 appearance-none block w-full px-4 py-3 border border-[#d4d2c7] rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-[#2a4536] sm:text-sm"
-                  placeholder="EMP-1001"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-[#3b3e38]">Full Name</label>
+              <input
+                name="name"
+                type="text"
+                required
+                className="mt-1 appearance-none block w-full px-4 py-3 border border-[#d4d2c7] rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-[#2a4536] sm:text-sm"
+                placeholder="John Doe"
+              />
             </div>
 
             <div>

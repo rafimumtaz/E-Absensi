@@ -2,12 +2,13 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Shield, ArrowRight } from 'lucide-react';
+import { Shield, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { login } from '../actions/auth';
 
 export default function LoginPage() {
   const [error, setError] = useState('');
   const [isPending, startTransition] = useTransition();
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(formData: FormData) {
     setError('');
@@ -58,14 +59,25 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-[#3b3e38]">Password</label>
-              <div className="mt-1">
+              <div className="mt-1 relative">
                 <input
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
-                  className="appearance-none block w-full px-4 py-3 border border-[#d4d2c7] rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-[#2a4536] sm:text-sm transition-all"
+                  className="appearance-none block w-full px-4 py-3 border border-[#d4d2c7] rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-[#2a4536] sm:text-sm transition-all pr-10"
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#6b6e68] hover:text-[#3b3e38] transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-5 w-5" aria-hidden="true" />
+                  )}
+                </button>
               </div>
             </div>
 
